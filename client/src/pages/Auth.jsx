@@ -7,20 +7,27 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../utils/firebase";
 import axios from "axios";
 import { ServerUrl } from "../App";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
+import { useNavigate } from "react-router-dom";
 
 function Auth() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate()
   const handleGoogleLogin = async () => {
     try {
       const res = await signInWithPopup(auth, provider);
       let User = res.user;
       let name = User.displayName;
       let email = User.email;
+
       const result = await axios.post(
         ServerUrl + "/api/auth/google",
         { name, email },
         { withCredentials: true },
       );
-      console.log(result.data);
+      dispatch(setUserData(result.data.user));
+      navigate("/home")
     } catch (error) {
       console.log("Error : ", error); 
     }
@@ -33,9 +40,9 @@ function Auth() {
       <div className="absolute w-[400px] h-[400px] bg-purple-600 blur-[150px] opacity-20 bottom-20 right-20" />
 
       <motion.div
-        initial={{ opacity: 0, y: 150 }}
+        initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
+        transition={{ duration: 0.6 }}
         className="relative bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-3xl w-[420px] text-center shadow-2xl"
       >
         {/* Logo */}

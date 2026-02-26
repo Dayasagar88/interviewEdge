@@ -2,17 +2,18 @@ import jwt from "jsonwebtoken";
 
 const isAuth = async (req, res, next) => {
   try {
-    let { token } = res.cookie;
+    let { token } = req.cookies;
+    // console.log(token)
 
     if (!token) {
       return res.status(400).json({ message: "Token not found!" });
     }
 
     const verifyToken = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(verifyToken, verifyToken.userId);
+    console.log(verifyToken);
 
-    if (!veryfyToken) {
-      return res.status(400).json({ message: "Token not valid!" });
+    if (!verifyToken) {
+      return res.status(400).json({ message: "Token not valid!"});
     }
 
     req.userId = verifyToken.userId;
@@ -21,6 +22,6 @@ const isAuth = async (req, res, next) => {
   } catch (error) {
     return res.status(500).json({ message: "Internal server error, isAuth" });
   }
-};
+}; 
 
 export default isAuth;
