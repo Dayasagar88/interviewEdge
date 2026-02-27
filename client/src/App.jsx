@@ -6,6 +6,7 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "./redux/userSlice";
 import Dashboard from "./components/Dashboard";
+import Interview from "./pages/Interview";
 
 export const ServerUrl = "http://localhost:8000";
 
@@ -36,6 +37,7 @@ function App() {
       <Route path="/" element={<Dashboard/>}/>
       <Route path="/home" element={<Home />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/interview" element={<Interview />} />
     </Routes>
   );
 }

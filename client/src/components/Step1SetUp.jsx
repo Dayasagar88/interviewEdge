@@ -1,0 +1,802 @@
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaUserTie,
+  FaMicrophone,
+  FaChartLine,
+  FaArrowRight,
+  FaCloudUploadAlt,
+  FaCheckCircle,
+} from "react-icons/fa";
+import { HiSparkles } from "react-icons/hi";
+import { MdWork, MdTimer } from "react-icons/md";
+import { ServerUrl } from "../App";
+import axios from "axios";
+import { FaSpinner, FaFileAlt, FaCode, FaBriefcase } from "react-icons/fa";
+
+// ─── Variants ─────────────────────────────────────────────────────────────────
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 28, filter: "blur(6px)" },
+  visible: (i = 0) => ({
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: i * 0.1 },
+  }),
+};
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+
+const features = [
+  {
+    icon: <FaUserTie />,
+    label: "Choose Role & Experience",
+    desc: "Tailored questions for your level",
+  },
+  {
+    icon: <FaMicrophone />,
+    label: "Smart Voice Interview",
+    desc: "Answer naturally with your mic",
+  },
+  {
+    icon: <FaChartLine />,
+    label: "Performance Analytics",
+    desc: "Detailed scores and insights",
+  },
+];
+
+const interviewTypes = [
+  { value: "technical", label: "Technical Interview" },
+  { value: "hr", label: "HR / Behavioral" },
+  { value: "system_design", label: "System Design" },
+  { value: "dsa", label: "Data Structures & Algorithms" },
+];
+
+// ─── Floating Input ───────────────────────────────────────────────────────────
+
+function FloatingInput({ icon, placeholder, value, onChange }) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <motion.div
+      animate={{
+        borderColor: focused
+          ? "rgba(59,130,246,0.6)"
+          : "rgba(255,255,255,0.08)",
+        boxShadow: focused ? "0 0 0 3px rgba(59,130,246,0.08)" : "none",
+      }}
+      transition={{ duration: 0.2 }}
+      className="flex items-center gap-3 px-4 py-3.5 rounded-xl"
+      style={{
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <span
+        style={{
+          color: focused ? "#60a5fa" : "#4b5563",
+          transition: "color 0.2s",
+          flexShrink: 0,
+        }}
+      >
+        {icon}
+      </span>
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        className="bg-transparent outline-none text-white placeholder-gray-600 text-sm w-full"
+      />
+    </motion.div>
+  );
+}
+
+// ─── Step1SetUp ───────────────────────────────────────────────────────────────
+
+function Step1SetUp({ onStart }) {
+  const [role, setRole] = useState("");
+  const [experience, setExperience] = useState("");
+  const [interviewType, setInterviewType] = useState("technical");
+  const [loading, setLoading] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [skills, setSkills] = useState([]);
+  const [resumeText, setResumeText] = useState("");
+  const [analysisDone, setAnalysisDone] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [resumeAnalysis, setResumeAnalysis] = useState(null);
+
+  const [dragging, setDragging] = useState(false);
+  const [selectOpen, setSelectOpen] = useState(false);
+  const [resumeFile, setResumeFile] = useState(null);
+  const fileRef = useRef(null);
+
+  const canStart = role.trim() && experience.trim();
+  // console.log(resumeFile)
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      setResumeFile(file);
+      setResumeAnalysis(null);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    setResumeFile(e.target.files[0]);
+    setResumeAnalysis(null);
+  };
+
+  const handleUploadResume = async () => {
+    if (!resumeFile || analyzing) return;
+    console.log("enter");
+    setAnalyzing(true);
+
+    const formData = new FormData();
+
+    formData.append("resume", resumeFile);
+
+    try {
+      const result = await axios.post(
+        ServerUrl + "/api/interview/resume-analysis",
+        formData,
+        { withCredentials: true },
+      );
+
+      console.log(result.data);
+      setResumeAnalysis(result.data)
+      setRole(result.data.role || "");
+      setExperience(result.data.experience || "");
+      setProjects(result.data.projects || []);
+      setSkills(result.data.skills || []);
+      setResumeText(result.data.resumeText || "");
+      setAnalysisDone(true);
+      setAnalyzing(false);
+    } catch (error) {
+      console.log("Upload resume error : ", error);
+    }
+  };
+
+  const selectedType = interviewTypes.find((t) => t.value === interviewType);
+
+  return (
+    <div className="max-w-6xl mx-auto px-6 py-16 pr-20">
+      <div className="grid lg:grid-cols-2 gap-14 items-center">
+        {/* ── LEFT ── */}
+        <motion.div variants={stagger} initial="hidden" animate="visible">
+          <motion.div
+            custom={0}
+            variants={fadeUp}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium mb-7"
+            style={{
+              background: "rgba(59,130,246,0.1)",
+              border: "1px solid rgba(59,130,246,0.25)",
+              color: "#60a5fa",
+            }}
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+            >
+              <HiSparkles />
+            </motion.div>
+            Step 1 of 3 · Interview Setup
+          </motion.div>
+
+          <motion.h1
+            custom={1}
+            variants={fadeUp}
+            className="text-4xl lg:text-5xl font-bold leading-tight mb-5"
+          >
+            Start Your{" "}
+            <span
+              style={{
+                background: "linear-gradient(90deg, #60a5fa, #3b82f6)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              AI Interview
+            </span>
+          </motion.h1>
+
+          <motion.p
+            custom={2}
+            variants={fadeUp}
+            className="text-gray-400 text-base leading-relaxed mb-10 max-w-sm"
+          >
+            Practice real interview scenarios powered by AI. Improve
+            communication, technical skills, and confidence.
+          </motion.p>
+
+          <div className="space-y-3">
+            {features.map(({ icon, label, desc }, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -28 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{
+                  delay: 0.4 + i * 0.13,
+                  duration: 0.55,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                whileHover={{ x: 6, borderColor: "rgba(59,130,246,0.4)" }}
+                className="flex items-center gap-4 px-5 py-4 rounded-xl cursor-default"
+                style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  transition: "border-color 0.2s",
+                }}
+              >
+                <div
+                  className="w-9 h-9 rounded-lg flex items-center justify-center text-blue-400 flex-shrink-0"
+                  style={{
+                    background: "rgba(59,130,246,0.1)",
+                    border: "1px solid rgba(59,130,246,0.2)",
+                  }}
+                >
+                  {icon}
+                </div>
+                <div>
+                  <p className="text-gray-200 text-sm font-medium">{label}</p>
+                  <p className="text-gray-600 text-xs mt-0.5">{desc}</p>
+                </div>
+                <motion.div
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 2.2,
+                    delay: i * 0.5,
+                  }}
+                  className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"
+                />
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* ── RIGHT — Form card ── */}
+        <motion.div
+          initial={{ opacity: 0, x: 50, filter: "blur(10px)" }}
+          animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+          transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+        >
+          <div
+            className="rounded-2xl p-8 shadow-2xl"
+            style={{
+              background: "rgba(8,12,24,0.85)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              backdropFilter: "blur(20px)",
+            }}
+          >
+            <motion.div
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{
+                duration: 0.9,
+                ease: [0.16, 1, 0.3, 1],
+                delay: 0.35,
+              }}
+              style={{
+                height: 2,
+                background: "linear-gradient(90deg, #2563eb, #60a5fa, #2563eb)",
+                borderRadius: 2,
+                marginBottom: "1.75rem",
+                transformOrigin: "left",
+              }}
+            />
+
+            <h2 className="text-xl font-bold text-white mb-1">
+              Interview Setup
+            </h2>
+            <p className="text-gray-500 text-sm mb-7">
+              Configure your session to get started
+            </p>
+
+            <div className="space-y-5">
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+              >
+                <label className="text-xs text-gray-500 uppercase tracking-widest mb-2 block font-medium">
+                  Job Role
+                </label>
+                <FloatingInput
+                  icon={<MdWork size={16} />}
+                  placeholder="e.g. Frontend Developer, Data Scientist"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+              >
+                <label className="text-xs text-gray-500 uppercase tracking-widest mb-2 block font-medium">
+                  Experience Level
+                </label>
+                <FloatingInput
+                  icon={<MdTimer size={16} />}
+                  placeholder="e.g. Fresher, 2 years, 5+ years"
+                  value={experience}
+                  onChange={(e) => setExperience(e.target.value)}
+                />
+              </motion.div>
+
+              {/* Interview Type dropdown */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+              >
+                <label className="text-xs text-gray-500 uppercase tracking-widest mb-2 block font-medium">
+                  Interview Type
+                </label>
+                <div className="relative">
+                  <motion.button
+                    onClick={() => setSelectOpen(!selectOpen)}
+                    animate={{
+                      borderColor: selectOpen
+                        ? "rgba(59,130,246,0.6)"
+                        : "rgba(255,255,255,0.08)",
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-sm"
+                    style={{
+                      background: "rgba(255,255,255,0.03)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <span className="text-gray-200">{selectedType?.label}</span>
+                    <motion.span
+                      animate={{ rotate: selectOpen ? 180 : 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="text-gray-500 text-xs"
+                    >
+                      ▾
+                    </motion.span>
+                  </motion.button>
+                  <AnimatePresence>
+                    {selectOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden shadow-2xl z-50"
+                        style={{
+                          background: "#090f1a",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                        }}
+                      >
+                        {interviewTypes.map((type) => (
+                          <motion.button
+                            key={type.value}
+                            onClick={() => {
+                              setInterviewType(type.value);
+                              setSelectOpen(false);
+                            }}
+                            whileHover={{
+                              backgroundColor: "rgba(59,130,246,0.1)",
+                              x: 4,
+                            }}
+                            className="w-full text-left px-4 py-3 text-sm flex items-center justify-between"
+                            style={{
+                              color:
+                                type.value === interviewType
+                                  ? "#60a5fa"
+                                  : "#9ca3af",
+                            }}
+                          >
+                            {type.label}
+                            {type.value === interviewType && (
+                              <FaCheckCircle className="text-blue-400 text-xs" />
+                            )}
+                          </motion.button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+
+              {/* Resume upload */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7, duration: 0.5 }}
+              >
+                <label className="text-xs text-gray-500 uppercase tracking-widest mb-2 block font-medium">
+                  Resume{" "}
+                  <span className="normal-case text-gray-600">
+                    (Optional · PDF)
+                  </span>
+                </label>
+
+                <motion.div
+                  animate={{
+                    borderColor: dragging
+                      ? "rgba(59,130,246,0.7)"
+                      : resumeFile
+                        ? "rgba(34,197,94,0.5)"
+                        : "rgba(255,255,255,0.08)",
+                    background: dragging
+                      ? "rgba(59,130,246,0.07)"
+                      : resumeFile
+                        ? "rgba(34,197,94,0.04)"
+                        : "rgba(255,255,255,0.02)",
+                  }}
+                  transition={{ duration: 0.2 }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragging(true);
+                  }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={handleDrop}
+                  className="rounded-xl overflow-hidden"
+                  style={{
+                    border: `1.5px dashed ${resumeFile ? "rgba(34,197,94,0.5)" : "rgba(255,255,255,0.08)"}`,
+                  }}
+                >
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="application/pdf"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+
+                  <AnimatePresence mode="wait">
+                    {resumeFile ? (
+                      <motion.div
+                        key="uploaded"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.3 }}
+                        className="px-5 py-5"
+                      >
+                        {/* File info row */}
+                        <div className="flex items-center gap-3 mb-4">
+                          <div
+                            className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{
+                              background: "rgba(34,197,94,0.1)",
+                              border: "1px solid rgba(34,197,94,0.25)",
+                            }}
+                          >
+                            <FaFileAlt className="text-green-400 text-base" />
+                          </div>
+                          <div className="flex-1 overflow-hidden">
+                            <p className="text-green-400 text-sm font-medium truncate">
+                              {resumeFile.name}
+                            </p>
+                            <p className="text-gray-600 text-xs mt-0.5">
+                              {(resumeFile.size / 1024).toFixed(1)} KB · PDF
+                            </p>
+                          </div>
+                          <motion.button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setResumeFile(null);
+                              setResumeAnalysis(null);
+                            }}
+                            whileHover={{ scale: 1.1, color: "#f87171" }}
+                            className="text-gray-600 text-xs px-2 py-1 rounded-lg flex-shrink-0"
+                            style={{
+                              background: "rgba(255,255,255,0.04)",
+                              transition: "color 0.2s",
+                            }}
+                          >
+                            ✕ Remove
+                          </motion.button>
+                        </div>
+
+                        {/* Analyze button or Results */}
+                        <AnimatePresence mode="wait">
+                          {!resumeAnalysis ? (
+                            <motion.button
+                              key="analyze-btn"
+                              initial={{ opacity: 0, y: 6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -6 }}
+                              onClick={handleUploadResume}
+                              disabled={analyzing}
+                              whileHover={
+                                !analyzing
+                                  ? {
+                                      scale: 1.02,
+                                      boxShadow:
+                                        "0 0 20px rgba(59,130,246,0.3)",
+                                    }
+                                  : {}
+                              }
+                              whileTap={!analyzing ? { scale: 0.98 } : {}}
+                              className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 relative overflow-hidden"
+                              style={{
+                                background: "rgba(59,130,246,0.15)",
+                                border: "1px solid rgba(59,130,246,0.35)",
+                                color: "#60a5fa",
+                                cursor: analyzing ? "not-allowed" : "pointer",
+                              }}
+                            >
+                              {analyzing ? (
+                                <>
+                                  <motion.div
+                                    animate={{ rotate: 360 }}
+                                    transition={{
+                                      repeat: Infinity,
+                                      duration: 0.8,
+                                      ease: "linear",
+                                    }}
+                                  >
+                                    <FaSpinner className="text-sm" />
+                                  </motion.div>
+                                  Analyzing Resume...
+                                </>
+                              ) : (
+                                <>
+                                  <HiSparkles />
+                                  Analyze Resume
+                                  <motion.div
+                                    initial={{ x: "-100%" }}
+                                    animate={{ x: "200%" }}
+                                    transition={{
+                                      repeat: Infinity,
+                                      duration: 2,
+                                      ease: "easeInOut",
+                                      repeatDelay: 1,
+                                    }}
+                                    style={{
+                                      position: "absolute",
+                                      top: 0,
+                                      bottom: 0,
+                                      width: "35%",
+                                      background:
+                                        "linear-gradient(90deg, transparent, rgba(96,165,250,0.15), transparent)",
+                                      pointerEvents: "none",
+                                    }}
+                                  />
+                                </>
+                              )}
+                            </motion.button>
+                          ) : (
+                            <motion.div
+                              key="results"
+                              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{
+                                duration: 0.45,
+                                ease: [0.16, 1, 0.3, 1],
+                              }}
+                              className="rounded-xl p-4"
+                              style={{
+                                background: "rgba(59,130,246,0.05)",
+                                border: "1px solid rgba(59,130,246,0.18)",
+                              }}
+                            >
+                              {/* Header */}
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  <motion.div
+                                    animate={{ opacity: [0.5, 1, 0.5] }}
+                                    transition={{
+                                      repeat: Infinity,
+                                      duration: 2,
+                                    }}
+                                    className="w-1.5 h-1.5 rounded-full bg-blue-400"
+                                  />
+                                  <span className="text-blue-400 text-xs font-semibold uppercase tracking-widest">
+                                    Resume Analysis
+                                  </span>
+                                </div>
+                                <motion.button
+                                  onClick={handleUploadResume}
+                                  whileHover={{ scale: 1.05 }}
+                                  className="text-gray-600 text-xs hover:text-gray-400 transition-colors"
+                                >
+                                  Re-analyze
+                                </motion.button>
+                              </div>
+
+                              {/* Projects */}
+                              {resumeAnalysis.projects?.length > 0 && (
+                                <div className="mb-3">
+                                  <div className="flex items-center gap-1.5 mb-2">
+                                    <FaBriefcase className="text-gray-500 text-xs" />
+                                    <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">
+                                      Projects
+                                    </span>
+                                  </div>
+                                  <ul className="space-y-1">
+                                    {resumeAnalysis.projects.map((p, i) => (
+                                      <motion.li
+                                        key={i}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{
+                                          delay: i * 0.08,
+                                          duration: 0.3,
+                                        }}
+                                        className="flex items-center gap-2 text-gray-300 text-xs"
+                                      >
+                                        <span className="w-1 h-1 rounded-full bg-blue-500 flex-shrink-0" />
+                                        {p}
+                                      </motion.li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {resumeAnalysis.projects?.length > 0 &&
+                                resumeAnalysis.skills?.length > 0 && (
+                                  <div
+                                    style={{
+                                      height: 1,
+                                      background: "rgba(255,255,255,0.05)",
+                                      margin: "10px 0",
+                                    }}
+                                  />
+                                )}
+
+                              {/* Skills */}
+                              {resumeAnalysis.skills?.length > 0 && (
+                                <div>
+                                  <div className="flex items-center gap-1.5 mb-2">
+                                    <FaCode className="text-gray-500 text-xs" />
+                                    <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">
+                                      Skills
+                                    </span>
+                                  </div>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {resumeAnalysis.skills.map((skill, i) => (
+                                      <motion.span
+                                        key={i}
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{
+                                          delay: i * 0.06,
+                                          duration: 0.3,
+                                          type: "spring",
+                                          stiffness: 260,
+                                        }}
+                                        className="px-2.5 py-1 rounded-lg text-xs font-medium"
+                                        style={{
+                                          background: "rgba(59,130,246,0.12)",
+                                          border:
+                                            "1px solid rgba(59,130,246,0.25)",
+                                          color: "#93c5fd",
+                                        }}
+                                      >
+                                        {skill}
+                                      </motion.span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="empty"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => fileRef.current?.click()}
+                        className="flex flex-col items-center justify-center gap-2 py-7 cursor-pointer"
+                      >
+                        <motion.div
+                          animate={{ y: [0, -5, 0] }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 2,
+                            ease: "easeInOut",
+                          }}
+                        >
+                          <FaCloudUploadAlt className="text-blue-400 text-3xl" />
+                        </motion.div>
+                        <p className="text-gray-400 text-sm">
+                          Drop your resume or{" "}
+                          <span className="text-blue-400">browse</span>
+                        </p>
+                        <p className="text-gray-600 text-xs">PDF up to 5MB</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </motion.div>
+
+              {/* CTA */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+                className="pt-1"
+              >
+                <motion.button
+                  onClick={() =>
+                    canStart &&
+                    onStart({ role, experience, interviewType, resumeFile })
+                  }
+                  disabled={!canStart}
+                  whileHover={
+                    canStart
+                      ? {
+                          scale: 1.03,
+                          boxShadow: "0 0 30px rgba(59,130,246,0.45)",
+                        }
+                      : {}
+                  }
+                  whileTap={canStart ? { scale: 0.97 } : {}}
+                  className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-sm relative overflow-hidden"
+                  style={{
+                    background: canStart
+                      ? "linear-gradient(135deg, #2563eb, #1d4ed8)"
+                      : "rgba(255,255,255,0.05)",
+                    color: canStart ? "#fff" : "#4b5563",
+                    cursor: canStart ? "pointer" : "not-allowed",
+                    transition: "background 0.3s, color 0.3s",
+                  }}
+                >
+                  {canStart && (
+                    <motion.div
+                      initial={{ x: "-100%" }}
+                      animate={{ x: "200%" }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 2.5,
+                        ease: "easeInOut",
+                        repeatDelay: 1.5,
+                      }}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        bottom: 0,
+                        width: "40%",
+                        background:
+                          "linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)",
+                        pointerEvents: "none",
+                      }}
+                    />
+                  )}
+                  Start Interview
+                  <motion.span
+                    animate={canStart ? { x: [0, 4, 0] } : {}}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 1.4,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <FaArrowRight className="text-xs" />
+                  </motion.span>
+                </motion.button>
+                {!canStart && (
+                  <p className="text-center text-gray-600 text-xs mt-2">
+                    Fill in role and experience to continue
+                  </p>
+                )}
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+export default Step1SetUp;
