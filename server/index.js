@@ -23,7 +23,7 @@ app.use("/api/user", userRouter)
 app.use("/api/interview", InterviewRouter)
 
 const PORT = process.env.PORT || 6000
-
+ 
 app.listen(PORT, () => {
     console.log(`Server running on ${PORT}🟢`)
     connectDB()
