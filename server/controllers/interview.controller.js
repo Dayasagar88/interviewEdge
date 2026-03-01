@@ -101,18 +101,43 @@ export const generateQuestion = async (req, res) => {
     const safeResume = resumeText?.trim() || "None";
 
     const userPrompt = `
-Role:${role}
-Experience:${experience}
-InterviewMode:${mode}
-Projects:${projectsText}
-Skills:${skillsText}
-Resume:${safeResume}
-`;
+    Role:${role}
+    Experience:${experience}
+    InterviewMode:${mode}
+    Projects:${projectsText}
+    Skills:${skillsText},
+    Resume:${safeResume}
+    `;
 
     const messages = [
       {
         role: "system",
-        content: `Generate exactly 5 interview questions`,
+        content: `
+You are a real human interviewer conducting a professional interview.
+
+Speak in simple, natural English as if you are directly talking to the candidate.
+
+Generate exactly 5 interview questions.
+
+Strict Rules:
+- Each question must contain between 15 and 25 words.
+- Each question must be a single complete sentence.
+- Do NOT number them.
+- Do NOT add explanations.
+- Do NOT add extra text before or after.
+- One question per line only.
+- Keep language simple and conversational.
+- Questions must feel practical and realistic.
+
+Difficulty progression:
+Question 1 → easy  
+Question 2 → easy  
+Question 3 → medium  
+Question 4 → medium  
+Question 5 → hard  
+
+Make questions based on the candidate’s role, experience,interviewMode, projects, skills, and resume details.
+`,
       },
       {
         role: "user",
@@ -155,6 +180,9 @@ Resume:${safeResume}
       creditsLeft: user.credits,
       userName: user.name,
       questions: interview.questions,
+      role,
+      experience,
+      mode,
     });
   } catch (error) {
     console.log(error);

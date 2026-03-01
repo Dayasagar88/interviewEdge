@@ -119,7 +119,7 @@ function Step1SetUp({ onStart }) {
 
   const [role, setRole] = useState("");
   const [experience, setExperience] = useState("");
-  const [interviewType, setInterviewType] = useState("Technical Interview");
+  const [interviewType, setInterviewType] = useState("technical");
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
   const [skills, setSkills] = useState([]);
@@ -186,6 +186,7 @@ function Step1SetUp({ onStart }) {
         dispatch(
           setUserData({ ...userData, credits: result.data.creditsLeft }),
         );
+        console.log(result.data)
       onStart(result.data);
     } catch (error) {
       console.log(

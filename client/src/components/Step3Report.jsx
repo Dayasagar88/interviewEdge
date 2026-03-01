@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 function Step3Report({ report }) {
   const navigate = useNavigate();
 
+  console.log(report)
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-24 pr-20 flex flex-col items-center justify-center text-center">
       <motion.div

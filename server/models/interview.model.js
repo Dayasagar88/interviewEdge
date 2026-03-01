@@ -33,10 +33,10 @@ const interviewSchema = new mongoose.Schema(
     mode: {
       type: String,
       enum: [
-        "Technical Interview",
-        "HR / Behavioral",
-        "System Design",
-        "Data Structures & Algorithms",
+        "technical",
+        "hr",
+        "system_design",
+        "dsa",
       ],
       required: true,
     },
