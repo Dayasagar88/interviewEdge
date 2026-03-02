@@ -131,6 +131,8 @@ function Step2Interview({ interviewData, onFinish }) {
     [selectedVoice],
   );
 
+  
+
   // ─── API: submit answer ────────────────────────────────────────────────────
   const callSubmitAnswer = useCallback(
     async (ans, timeTaken) => {
@@ -977,7 +979,7 @@ function Step2Interview({ interviewData, onFinish }) {
                   flex: 1,
                   height: "48px",
                   borderRadius: "12px",
-                  display: "flex",
+                  // display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "8px",

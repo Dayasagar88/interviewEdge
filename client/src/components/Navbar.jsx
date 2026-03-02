@@ -278,7 +278,7 @@ function Navbar() {
                     <motion.button
                       whileHover={{ x: 4, backgroundColor: "rgba(59,130,246,0.08)" }}
                       transition={{ duration: 0.15 }}
-                      onClick={() => { navigate("/history"); setShowMenu(false); }}
+                      onClick={() => { navigate("/interview-history"); setShowMenu(false); }}
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white text-sm transition-colors"
                     >
                       <FaHistory className="text-blue-400 text-xs" />

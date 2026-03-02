@@ -346,11 +346,82 @@ export const finishInterview = async (req, res) => {
         confidence: q.confidence || 0,
         communication: q.communication || 0,
         correctness: q.correctness || 0,
+        answer: q.answer || "",
       })),
     });
   } catch (error) {
     return res
       .status(500)
       .json({ message: "failed to finish interview : ", error });
+  }
+};
+
+export const getInterviewHistory = async (req, res) => {
+  try {
+    const interview = await Interview.find({ userId: req.userId }).sort({
+      createdAt: -1,
+    });
+
+    return res.status(200).json({ interview });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "failed to get interview history : ", error });
+  }
+};
+
+export const getInterviewReport = async (req, res) => {
+  try {
+    const interview = await Interview.findById(req.params.id);
+
+    if (!interview) {
+      return res.status(400).json({ message: "Failed to find interview." });
+    }
+
+    const totalQuestion = interview.questions.length;
+
+    let totalScore = 0;
+    let totalCofidence = 0;
+    let totalCommunication = 0;
+    let totalCorrectness = 0;
+
+    interview.questions.forEach((q) => {
+      totalScore += q.score || 0;
+      totalCofidence += q.confidence || 0;
+      totalCommunication += q.communication || 0;
+      totalCorrectness += q.correctness || 0;
+    });
+
+    const finalScore = totalQuestion ? totalScore / totalQuestion : 0;
+    const avgConfidence = totalQuestion ? totalCofidence / totalQuestion : 0;
+    const avgCommunication = totalQuestion
+      ? totalCommunication / totalQuestion
+      : 0;
+    const avgCorrectness = totalQuestion ? totalCorrectness / totalQuestion : 0;
+
+    interview.finalScore = finalScore;
+    interview.status = "Completed";
+    await interview.save();
+
+    return res.json({
+      finalScore: Number(finalScore.toFixed(1)),
+      avgConfidence: Number(avgConfidence.toFixed(1)),
+      avgCommunication: Number(avgCommunication.toFixed(1)),
+      avgCorrectness: Number(avgCorrectness.toFixed(1)),
+      QuestionWiseScore: interview.questions.map((q) => ({
+        question: q.question,
+        score: q.score || 0,
+        feedback: q.feedback || "",
+        confidence: q.confidence || 0,
+        communication: q.communication || 0,
+        correctness: q.correctness || 0,
+        answer: q.answer || "",
+      })),
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "failed to get interview report : ", error });
   }
 };

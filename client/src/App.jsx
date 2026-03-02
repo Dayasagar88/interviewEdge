@@ -7,6 +7,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "./redux/userSlice";
 import Dashboard from "./components/Dashboard";
 import Interview from "./pages/Interview";
+import InterviewHistory from "./components/InterviewHistory";
+import Pricing from "./components/Pricing";
+import InterviewReport from "./components/InterviewReport";
 
 export const ServerUrl = "http://localhost:8000";
 
@@ -38,6 +41,9 @@ function App() {
       <Route path="/home" element={<Home />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/interview" element={<Interview />} />
+      <Route path="/interview-history" element={<InterviewHistory/>} />
+      <Route path="/interview-report/:id" element={<InterviewReport/>} />
+      <Route path="/pricing" element={<Pricing />} />
     </Routes>
   );
 }

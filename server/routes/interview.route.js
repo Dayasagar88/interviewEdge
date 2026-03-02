@@ -5,6 +5,8 @@ import {
   analyzeResume,
   finishInterview,
   generateQuestion,
+  getInterviewHistory,
+  getInterviewReport,
   submitAnswer,
 } from "../controllers/interview.controller.js";
 
@@ -19,5 +21,8 @@ InterviewRouter.post(
 InterviewRouter.post("/generate-questions", isAuth, generateQuestion);
 InterviewRouter.post("/submit-answers", isAuth, submitAnswer);
 InterviewRouter.post("/finish-interview", isAuth, finishInterview);
+
+InterviewRouter.get("/get-interview", isAuth, getInterviewHistory);
+InterviewRouter.get("/interview-report/:id", isAuth, getInterviewReport);
 
 export default InterviewRouter;
