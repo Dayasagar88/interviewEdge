@@ -162,9 +162,9 @@ function Dashboard() {
   const { userData } = useSelector((state) => state.user);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!userData) navigate("/");
-  }, []);
+  // useEffect(() => {
+  //   if (!userData) navigate("/");
+  // }, []);
 
   const steps = [
     {

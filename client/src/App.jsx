@@ -17,7 +17,7 @@ function App() {
   const user = useSelector((state) => state.user.userData);
   const dispatch = useDispatch()
 
-  console.log(user);
+  // console.log(user);
   useEffect(() => {
     const getUser = async () => {
       try {

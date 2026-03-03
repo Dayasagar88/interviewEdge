@@ -2,7 +2,12 @@ import React, { useRef } from "react";
 import Navbar from "../components/Navbar";
 import { motion, useInView } from "framer-motion";
 import { AiOutlineCheck } from "react-icons/ai";
-import { FaArrowRight, FaMicrophone, FaBrain, FaChartLine } from "react-icons/fa";
+import {
+  FaArrowRight,
+  FaMicrophone,
+  FaBrain,
+  FaChartLine,
+} from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 
@@ -35,7 +40,10 @@ function Orb({ size, top, left, right, bottom, color, blur, delay }) {
         position: "absolute",
         width: size,
         height: size,
-        top, left, right, bottom,
+        top,
+        left,
+        right,
+        bottom,
         borderRadius: "50%",
         background: color,
         filter: `blur(${blur}px)`,
@@ -55,7 +63,12 @@ function TypingDots() {
         <motion.div
           key={i}
           animate={{ y: [0, -4, 0], opacity: [0.4, 1, 0.4] }}
-          transition={{ repeat: Infinity, duration: 0.8, delay: i * 0.18, ease: "easeInOut" }}
+          transition={{
+            repeat: Infinity,
+            duration: 0.8,
+            delay: i * 0.18,
+            ease: "easeInOut",
+          }}
           className="w-1.5 h-1.5 rounded-full bg-blue-400"
         />
       ))}
@@ -74,9 +87,18 @@ function ScoreRing({ score = 8.5, max = 10 }) {
   return (
     <div className="relative w-24 h-24 flex items-center justify-center">
       <svg width="96" height="96" style={{ transform: "rotate(-90deg)" }}>
-        <circle cx="48" cy="48" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
+        <circle
+          cx="48"
+          cy="48"
+          r={r}
+          fill="none"
+          stroke="rgba(255,255,255,0.06)"
+          strokeWidth="6"
+        />
         <motion.circle
-          cx="48" cy="48" r={r}
+          cx="48"
+          cy="48"
+          r={r}
           fill="none"
           stroke="url(#scoreGrad)"
           strokeWidth="6"
@@ -116,9 +138,18 @@ function Home() {
   const cardInView = useInView(cardRef, { once: true, margin: "-60px" });
 
   const checks = [
-    { icon: <FaMicrophone className="text-blue-400 text-xs" />, label: "Real Interview Questions" },
-    { icon: <FaBrain className="text-blue-400 text-xs" />, label: "AI Evaluation Reports" },
-    { icon: <FaChartLine className="text-blue-400 text-xs" />, label: "Track Your Progress" },
+    {
+      icon: <FaMicrophone className="text-blue-400 text-xs" />,
+      label: "Real Interview Questions",
+    },
+    {
+      icon: <FaBrain className="text-blue-400 text-xs" />,
+      label: "AI Evaluation Reports",
+    },
+    {
+      icon: <FaChartLine className="text-blue-400 text-xs" />,
+      label: "Track Your Progress",
+    },
   ];
 
   const feedbackItems = [
@@ -131,15 +162,44 @@ function Home() {
     <div
       className="min-h-screen text-white overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, #020617 0%, #020617 70%, #000 100%)",
+        background:
+          "linear-gradient(135deg, #020617 0%, #020617 70%, #000 100%)",
         position: "relative",
       }}
     >
       {/* Ambient orbs */}
-      <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-        <Orb size={500} top="-5%" left="-5%" color="#1d4ed8" blur={130} delay={0} />
-        <Orb size={350} bottom="5%" right="-5%" color="#2563eb" blur={110} delay={0.3} />
-        <Orb size={220} top="40%" left="42%" color="#3b82f6" blur={80} delay={0.5} />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          overflow: "hidden",
+          pointerEvents: "none",
+        }}
+      >
+        <Orb
+          size={500}
+          top="-5%"
+          left="-5%"
+          color="#1d4ed8"
+          blur={130}
+          delay={0}
+        />
+        <Orb
+          size={350}
+          bottom="5%"
+          right="-5%"
+          color="#2563eb"
+          blur={110}
+          delay={0.3}
+        />
+        <Orb
+          size={220}
+          top="40%"
+          left="42%"
+          color="#3b82f6"
+          blur={80}
+          delay={0.5}
+        />
       </div>
 
       {/* Grid texture */}
@@ -148,8 +208,11 @@ function Home() {
         animate={{ opacity: 0.025 }}
         transition={{ duration: 2, delay: 0.4 }}
         style={{
-          position: "absolute", inset: 0, pointerEvents: "none",
-          backgroundImage: "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
           backgroundSize: "60px 60px",
         }}
       />
@@ -158,13 +221,8 @@ function Home() {
 
       <section className="py-24" style={{ position: "relative", zIndex: 1 }}>
         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
-
           {/* ── LEFT ── */}
-          <motion.div
-            variants={stagger}
-            initial="hidden"
-            animate="visible"
-          >
+          <motion.div variants={stagger} initial="hidden" animate="visible">
             {/* Badge */}
             <motion.div
               custom={0}
@@ -195,7 +253,8 @@ function Home() {
               <br />
               <span
                 style={{
-                  background: "linear-gradient(90deg, #60a5fa, #3b82f6, #2563eb)",
+                  background:
+                    "linear-gradient(90deg, #60a5fa, #3b82f6, #2563eb)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
@@ -210,14 +269,18 @@ function Home() {
               variants={fadeUp}
               className="mt-6 text-gray-400 text-lg leading-relaxed max-w-md"
             >
-              Practice real interview questions, get instant AI feedback, and improve faster than ever before.
+              Practice real interview questions, get instant AI feedback, and
+              improve faster than ever before.
             </motion.p>
 
             {/* CTA */}
             <motion.div custom={3} variants={fadeUp} className="mt-8">
               <motion.button
                 onClick={() => navigate("/interview")}
-                whileHover={{ scale: 1.05, boxShadow: "0 0 32px rgba(59,130,246,0.45)" }}
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: "0 0 32px rgba(59,130,246,0.45)",
+                }}
                 whileTap={{ scale: 0.97 }}
                 className="relative inline-flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-xl font-semibold overflow-hidden"
                 style={{ transition: "background 0.2s" }}
@@ -226,17 +289,30 @@ function Home() {
                 <motion.div
                   initial={{ x: "-100%" }}
                   animate={{ x: "200%" }}
-                  transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut", repeatDelay: 1.5 }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 2.5,
+                    ease: "easeInOut",
+                    repeatDelay: 1.5,
+                  }}
                   style={{
-                    position: "absolute", top: 0, bottom: 0, width: "40%",
-                    background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)",
+                    position: "absolute",
+                    top: 0,
+                    bottom: 0,
+                    width: "40%",
+                    background:
+                      "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)",
                     pointerEvents: "none",
                   }}
                 />
                 Start Interview
                 <motion.span
                   animate={{ x: [0, 4, 0] }}
-                  transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 1.4,
+                    ease: "easeInOut",
+                  }}
                 >
                   <FaArrowRight className="text-sm" />
                 </motion.span>
@@ -244,22 +320,25 @@ function Home() {
             </motion.div>
 
             {/* Check list */}
-            <motion.ul
-              custom={4}
-              variants={fadeUp}
-              className="mt-10 space-y-3"
-            >
+            <motion.ul custom={4} variants={fadeUp} className="mt-10 space-y-3">
               {checks.map(({ icon, label }, i) => (
                 <motion.li
                   key={i}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.7 + i * 0.12, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{
+                    delay: 0.7 + i * 0.12,
+                    duration: 0.5,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
                   className="flex items-center gap-3 text-gray-300"
                 >
                   <div
                     className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.25)" }}
+                    style={{
+                      background: "rgba(59,130,246,0.12)",
+                      border: "1px solid rgba(59,130,246,0.25)",
+                    }}
                   >
                     {icon}
                   </div>
@@ -273,7 +352,9 @@ function Home() {
           <motion.div
             ref={cardRef}
             initial={{ opacity: 0, x: 60, filter: "blur(10px)" }}
-            animate={cardInView ? { opacity: 1, x: 0, filter: "blur(0px)" } : {}}
+            animate={
+              cardInView ? { opacity: 1, x: 0, filter: "blur(0px)" } : {}
+            }
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
           >
             <div
@@ -288,10 +369,15 @@ function Home() {
               <motion.div
                 initial={{ scaleX: 0 }}
                 animate={cardInView ? { scaleX: 1 } : {}}
-                transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+                transition={{
+                  duration: 0.9,
+                  ease: [0.16, 1, 0.3, 1],
+                  delay: 0.5,
+                }}
                 style={{
                   height: 2,
-                  background: "linear-gradient(90deg, #2563eb, #60a5fa, #2563eb)",
+                  background:
+                    "linear-gradient(90deg, #2563eb, #60a5fa, #2563eb)",
                   borderRadius: 2,
                   marginBottom: "1.5rem",
                   transformOrigin: "left",
@@ -301,8 +387,12 @@ function Home() {
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">AI Feedback Preview</h3>
-                  <p className="text-gray-500 text-xs mt-0.5">React Developer · Mid-level</p>
+                  <h3 className="text-lg font-semibold text-white">
+                    AI Feedback Preview
+                  </h3>
+                  <p className="text-gray-500 text-xs mt-0.5">
+                    React Developer · Mid-level
+                  </p>
                 </div>
                 <ScoreRing score={8.5} max={10} />
               </div>
@@ -313,17 +403,24 @@ function Home() {
                 animate={cardInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ delay: 0.7, duration: 0.5 }}
                 className="rounded-xl p-4 mb-5"
-                style={{ background: "rgba(59,130,246,0.07)", border: "1px solid rgba(59,130,246,0.15)" }}
+                style={{
+                  background: "rgba(59,130,246,0.07)",
+                  border: "1px solid rgba(59,130,246,0.15)",
+                }}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
                     <HiSparkles className="text-white text-xs" />
                   </div>
-                  <span className="text-blue-400 text-xs font-medium">AI Evaluator</span>
+                  <span className="text-blue-400 text-xs font-medium">
+                    AI Evaluator
+                  </span>
                   <TypingDots />
                 </div>
                 <p className="text-gray-300 text-sm leading-relaxed">
-                  Your answer demonstrates strong understanding of React concepts. Try improving your time complexity explanation for a perfect score.
+                  Your answer demonstrates strong understanding of React
+                  concepts. Try improving your time complexity explanation for a
+                  perfect score.
                 </p>
               </motion.div>
 
@@ -335,13 +432,22 @@ function Home() {
                       <span className="text-gray-400">{label}</span>
                       <span style={{ color }}>{score}%</span>
                     </div>
-                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
+                    <div
+                      className="h-1.5 rounded-full overflow-hidden"
+                      style={{ background: "rgba(255,255,255,0.05)" }}
+                    >
                       <motion.div
                         initial={{ width: 0 }}
                         animate={cardInView ? { width: `${score}%` } : {}}
-                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.8 + i * 0.15 }}
+                        transition={{
+                          duration: 1,
+                          ease: [0.16, 1, 0.3, 1],
+                          delay: 0.8 + i * 0.15,
+                        }}
                         className="h-full rounded-full"
-                        style={{ background: `linear-gradient(90deg, ${color}99, ${color})` }}
+                        style={{
+                          background: `linear-gradient(90deg, ${color}99, ${color})`,
+                        }}
                       />
                     </div>
                   </div>
@@ -364,7 +470,6 @@ function Home() {
               </motion.div>
             </div>
           </motion.div>
-
         </div>
       </section>
     </div>
