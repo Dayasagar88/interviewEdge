@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- Replace with your actual screenshot -->
-![InterviewEdge Banner](https://placehold.co/1200x400/020617/3b82f6?text=InterviewEdge+AI&font=montserrat)
+![InterviewEdge Banner](https://github.com/Dayasagar88/interviewEdge/blob/main/client/src/assets/banner.png)
 
 <br/>
 
@@ -164,29 +164,6 @@ npm run dev
 ```
 
 Frontend runs on `http://localhost:5173` · Backend runs on `http://localhost:8000`
-
----
-
-## 🔐 Environment Variables
-
-### `client/.env`
-
-```env
-VITE_SERVER_URL=http://localhost:8000
-VITE_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxxxxx
-```
-
-### `server/.env`
-
-```env
-PORT=8000
-MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/interviewedge
-JWT_SECRET=your_jwt_secret_key
-GEMINI_API_KEY=your_google_gemini_api_key
-RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxxxxx
-RAZORPAY_KEY_SECRET=your_razorpay_secret
-CLIENT_URL=http://localhost:5173
-```
 
 ---
 
