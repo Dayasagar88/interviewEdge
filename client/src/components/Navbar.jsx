@@ -194,6 +194,7 @@ function Navbar() {
                   </p>
 
                   <motion.button
+                  onClick={() => navigate("/pricing")}
                     whileHover={{ scale: 1.03, boxShadow: "0 0 20px rgba(234,179,8,0.25)" }}
                     whileTap={{ scale: 0.97 }}
                     className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"

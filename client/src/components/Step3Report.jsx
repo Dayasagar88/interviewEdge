@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaArrowRight,
@@ -13,6 +13,10 @@ import {
 import { HiSparkles } from "react-icons/hi";
 import { MdOutlineAssignment } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
+
+// ADD:
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -476,7 +480,7 @@ function QuestionCard({ q, index }) {
 
 function Step3Report({ report, fromHistory = false }) {
   const navigate = useNavigate();
-  const reportRef = useRef(null);
+
   const [downloading, setDownloading] = useState(false);
 
   const {
@@ -496,42 +500,184 @@ function Step3Report({ report, fromHistory = false }) {
   console.log(answeredCount)
   const modeLabel = MODE_MAP[report?.mode?.toLowerCase()] || report?.mode || "";
 
-  const handleDownload = async () => {
-    setDownloading(true);
-    try {
-      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-        import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"),
-        import("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"),
-      ]);
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        backgroundColor: "#020617",
-        useCORS: true,
-        logging: false,
-      });
-      const pdf = new jsPDF.jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-      const W = pdf.internal.pageSize.getWidth(),
-        H = pdf.internal.pageSize.getHeight();
-      const imgH = (canvas.height * W) / canvas.width;
-      let y = 0;
-      while (y < imgH) {
-        if (y > 0) pdf.addPage();
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, -y, W, imgH);
-        y += H;
-      }
-      pdf.save(
-        `InterviewEdge_Report_${new Date().toISOString().slice(0, 10)}.pdf`,
-      );
-    } catch {
-      window.print();
-    } finally {
-      setDownloading(false);
+
+  const handleDownload = () => {
+  setDownloading(true);
+  try {
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    let cursorY = margin;
+
+    const hexToRgb = (hex) => {
+      const c = hex.replace("#", "");
+      return [parseInt(c.slice(0,2),16), parseInt(c.slice(2,4),16), parseInt(c.slice(4,6),16)];
+    };
+
+    const [gr, gg, gb] = hexToRgb(grade.color);
+
+    // Dark background
+    doc.setFillColor(8, 12, 24);
+    doc.rect(0, 0, pageW, pageH, "F");
+
+    // Accent top bar
+    doc.setFillColor(gr, gg, gb);
+    doc.rect(0, 0, pageW, 2, "F");
+
+    // Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(255, 255, 255);
+    doc.text("InterviewEdge AI", margin, cursorY + 8);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(107, 114, 128);
+    doc.text("Interview Performance Report", margin, cursorY + 14);
+    doc.text(formatDate(), pageW - margin, cursorY + 14, { align: "right" });
+
+    if (report?.role) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(gr, gg, gb);
+      doc.text(report.role, margin, cursorY + 22);
     }
-  };
+    if (modeLabel) {
+      const roleW = report?.role ? doc.getTextWidth(report.role) + 4 : 0;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(150, 150, 170);
+      doc.text(`[${modeLabel}]`, margin + roleW, cursorY + 22);
+    }
+
+    cursorY += 30;
+
+    // Divider
+    doc.setDrawColor(gr, gg, gb);
+    doc.setLineWidth(0.4);
+    doc.line(margin, cursorY, pageW - margin, cursorY);
+    cursorY += 6;
+
+    // Summary table
+    autoTable(doc, {
+      startY: cursorY,
+      margin: { left: margin, right: margin },
+      theme: "plain",
+      styles: {
+        font: "helvetica", fontSize: 10, cellPadding: 4,
+        textColor: [220, 220, 230], fillColor: [14, 20, 40],
+      },
+      headStyles: {
+        fillColor: [20, 28, 55], textColor: [gr, gg, gb],
+        fontStyle: "bold", fontSize: 9,
+      },
+      columnStyles: {
+        0: { fontStyle: "bold", textColor: [180, 185, 200] },
+        1: { halign: "center", textColor: [gr, gg, gb], fontStyle: "bold" },
+      },
+      head: [["Metric", "Score"]],
+      body: [
+        ["Overall Score",   `${finalScore} / 10  (${grade.label})`],
+        ["Confidence",      `${avgConfidence} / 10`],
+        ["Communication",   `${avgCommunication} / 10`],
+        ["Correctness",     `${avgCorrectness} / 10`],
+        ["Questions Answered", `${answeredCount} / ${QuestionWiseScore.length}`],
+        ...(report?.experience ? [["Experience", report.experience]] : []),
+        ...(report?.createdAt  ? [["Interview Date",
+          new Date(report.createdAt).toLocaleDateString("en-US",
+            { day:"numeric", month:"long", year:"numeric" })]] : []),
+      ],
+    });
+
+    cursorY = doc.lastAutoTable.finalY + 10;
+
+    // Q&A section heading
+    if (cursorY + 14 > pageH - margin) { doc.addPage(); cursorY = margin; }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(gr, gg, gb);
+    doc.text("Question-wise Breakdown", margin, cursorY);
+    cursorY += 5;
+    doc.setDrawColor(gr, gg, gb);
+    doc.setLineWidth(0.3);
+    doc.line(margin, cursorY, pageW - margin, cursorY);
+    cursorY += 4;
+
+    // Questions table
+    autoTable(doc, {
+      startY: cursorY,
+      margin: { left: margin, right: margin },
+      theme: "plain",
+      styles: {
+        font: "helvetica", fontSize: 8, cellPadding: 3,
+        textColor: [200, 205, 215], fillColor: [10, 15, 30],
+        overflow: "linebreak", lineColor: [30, 38, 65], lineWidth: 0.2,
+      },
+      headStyles: {
+        fillColor: [20, 28, 55], textColor: [gr, gg, gb],
+        fontStyle: "bold", fontSize: 8,
+      },
+      alternateRowStyles: { fillColor: [14, 20, 42] },
+      columnStyles: {
+        0: { cellWidth: 9,  halign: "center", fontStyle: "bold" },
+        1: { cellWidth: 46 },
+        2: { cellWidth: 14, halign: "center", fontStyle: "bold" },
+        3: { cellWidth: 14, halign: "center" },
+        4: { cellWidth: 18, halign: "center" },
+        5: { cellWidth: 16, halign: "center" },
+        6: { cellWidth: 30 },
+        7: { cellWidth: 30 },
+      },
+      head: [["#", "Question", "Score", "Conf.", "Comm.", "Corr.", "Your Answer", "Feedback"]],
+      body: QuestionWiseScore.map((q, i) => [
+        `Q${i + 1}`,
+        q.question || "",
+        `${q.score ?? 0}/10`,
+        `${q.confidence ?? 0}/10`,
+        `${q.communication ?? 0}/10`,
+        `${q.correctness ?? 0}/10`,
+        q.answer?.trim() || "—",
+        q.feedback || "—",
+      ]),
+      didParseCell: (data) => {
+        if (data.section === "body" && data.column.index === 2) {
+          const q = QuestionWiseScore[data.row.index];
+          if (q) {
+            const [cr,cg,cb] = hexToRgb(getScoreGrade(q.score || 0).color);
+            data.cell.styles.textColor = [cr, cg, cb];
+          }
+        }
+      },
+    });
+
+    // Footer on every page
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPages; p++) {
+      doc.setPage(p);
+      doc.setFillColor(8, 12, 24);
+      doc.rect(0, pageH - 10, pageW, 10, "F");
+      doc.setDrawColor(gr, gg, gb);
+      doc.setLineWidth(0.3);
+      doc.line(margin, pageH - 10, pageW - margin, pageH - 10);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(75, 85, 99);
+      doc.text(
+        "Generated by InterviewEdge AI · Keep practicing to improve your score.",
+        margin, pageH - 4
+      );
+      doc.text(`Page ${p} / ${totalPages}`, pageW - margin, pageH - 4, { align: "right" });
+    }
+
+    doc.save(`InterviewEdge_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+  } catch (err) {
+    console.error("PDF generation failed:", err);
+    window.print();
+  } finally {
+    setDownloading(false);
+  }
+};
 
   const DownloadBtn = () => (
     <button
@@ -904,7 +1050,7 @@ function Step3Report({ report, fromHistory = false }) {
         )}
 
         {/* ══ PRINTABLE REPORT BODY ══════════════════════════ */}
-        <div ref={reportRef}>
+        <div >
           {/* Hero score card */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
