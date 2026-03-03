@@ -11,7 +11,7 @@ import InterviewHistory from "./components/InterviewHistory";
 import Pricing from "./components/Pricing";
 import InterviewReport from "./components/InterviewReport";
 
-export const ServerUrl = "http://localhost:8000";
+export const ServerUrl = "https://interviewedge-gphn.onrender.com";
 
 function App() {
   const user = useSelector((state) => state.user.userData);
