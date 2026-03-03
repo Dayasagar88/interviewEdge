@@ -18,6 +18,7 @@ import Timer from "./Timer";
 
 import maleVideo from "../assets/Videos/male-ai.mp4";
 import femaleVideo from "../assets/Videos/female-ai.mp4";
+import { ServerUrl } from "../App";
 
 // ─── API ───────────────────────────────────────────────────────────────────────
 const BASE = "http://localhost:8000/api/interview";
@@ -138,7 +139,7 @@ function Step2Interview({ interviewData, onFinish }) {
     async (ans, timeTaken) => {
       try {
         const res = await axios.post(
-          `${BASE}/submit-answers`,
+          `${ServerUrl}/api/interview/submit-answers`,
           { interviewId, questionIndex: currentIndex, answer: ans, timeTaken },
           { withCredentials: true },
         );
@@ -161,7 +162,7 @@ function Step2Interview({ interviewData, onFinish }) {
 
     try {
       const res = await axios.post(
-        `${BASE}/finish-interview`,
+        `${ServerUrl}/api/interview/finish-interview`,
         { interviewId },
         { withCredentials: true },
       );
